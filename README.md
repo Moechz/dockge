@@ -40,7 +40,18 @@ backup.
 - **Deterministic build**: GNU tar with uid/gid 0 and zeroed timestamps, gzip without a timestamp, plus the review-standards self-check above.
 - **Stacks directory: container path == host path.** Dockge spells out a hard requirement - "Left Stacks Path === Right Stacks Path" - because it hands the compose file path to the Docker CLI. The stacks folder is therefore mounted at its own absolute host path (`/Volume1/DockerAppData/dockgedocker/stacks` inside and outside the container), so a relative volume like `./data` in a stack resolves to the same directory for the daemon as for Dockge.
 - **Measured non-root fit.** The upstream image carries no `user:`, so the probe ran it as uid 1000: it exits with `EACCES mkdir /opt/stacks` when the stacks directory is not mounted. With both directories mounted (and therefore owned by the application user) the unmodified image serves HTTP 200 and reports `healthy` as uid 1000 - no entrypoint wrapper needed.
-- **Socket exception, documented.** Only `/var/run/docker.sock` is mounted; `group_add: ["0"]` exists solely because the TOS socket is `root:root 0660`. The rationale, the least-privilege analysis and the reproducible evidence are in `docs/SOCKET-EXEMPTION.md` and decision D-006; the build gate refuses the socket for every application that does not declare this exception.
+- **Socket exception, documented.** This application mounts
+  `/var/run/docker.sock` - the one privilege the platform normally refuses -
+  because it *is* a Docker control panel: listing stacks, starting and stopping
+  them, `compose up/down`, logs and the terminal are all Docker Engine API calls,
+  and without the socket the UI opens while every action fails. It is mounted in
+  YAML long form on purpose (the official installer chowns mount sources it can
+  read as `src:dst`; doing that to the host socket would hand Docker to every
+  uid-1000 container on the NAS - measured, not theoretical). Only the socket file
+  is mounted, the container stays unprivileged, and `group_add: ["0"]` exists
+  solely because the TOS socket is `root:root 0660`. The reproducible evidence
+  and the four-part justification travel with the package's internal decision
+  record (D-006).
 
 ## Runtime file manifest
 
