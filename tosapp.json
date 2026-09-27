@@ -1,0 +1,113 @@
+{
+  "app_id": "dockgedocker",
+  "title": "Dockge",
+  "image": "louislam/dockge:1.5.0",
+  "repo_name": "dockge",
+  "mode": "plain",
+  "container_port": 5001,
+  "host_port": 8004,
+  "category": [
+    "Utilities"
+  ],
+  "volumes": [
+    {
+      "host": "/Volume1/DockerAppData/dockgedocker/app_data",
+      "container": "/app/data"
+    },
+    {
+      "host": "/Volume1/DockerAppData/dockgedocker/stacks",
+      "container": "/Volume1/DockerAppData/dockgedocker/stacks"
+    }
+  ],
+  "env": {
+    "TZ": "Asia/Shanghai",
+    "DOCKGE_STACKS_DIR": "/Volume1/DockerAppData/dockgedocker/stacks"
+  },
+  "docker_socket": true,
+  "group_add": [
+    "0"
+  ],
+  "docker_socket_reason": "Dockge is a Docker Compose stack manager: listing stacks, starting/stopping them, compose up/down, logs and the container terminal are all Docker Engine API calls over /var/run/docker.sock, so the socket is the application's core function rather than an optional privilege. The container therefore runs unprivileged (user 1000:1000), adds no capability, uses no privileged mode and no host networking, and mounts only the socket file itself; group_add 0 exists because the TOS socket is root:root 0660 and a non-root process cannot open it otherwise (measured on hardware). The only host path the application writes is its own data directory.",
+  "auth": "louislam",
+  "upstream_url": "https://github.com/louislam/dockge",
+  "upstream_license": "MIT",
+  "descript": "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon.",
+  "important": "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal.",
+  "release_note": "1. First release.",
+  "translations": {
+    "zh-cn": {
+      "descript": "Dockge 是一个自托管的 Docker Compose 栈管理器：用轻量网页面板创建、编辑、启停、更新和查看你用来定义容器的 compose 文件，带实时日志和浏览器内终端。本应用在 NAS 上运行官方 Docker Hub 镜像，自身设置保存在应用数据目录、compose 文件保存在 stacks 目录（重启与更新都不丢），从桌面图标打开。",
+      "important": "依赖 DockerEngine（应用中心会在缺失时自动安装）。本应用是 Docker 控制面板，因此挂载 /var/run/docker.sock —— 这是已申报的例外：仍以非 root 用户运行、不新增 capability、且只挂载该 socket 文件。compose 文件存放在 /Volume1/DockerAppData/dockgedocker/stacks，TOS 文件管理器看不到该路径，请用 SSH/SFTP 或 Dockge 自带的编辑器；自建栈时卷一律写宿主绝对路径（/Volume1/...），不要用相对路径。卸载并删除数据前请备份 app_data/（全部设置）与 stacks/。"
+    },
+    "zh-hk": {
+      "descript": "Dockge 係一個自架嘅 Docker Compose 堆疊管理器：用輕量網頁面板建立、編輯、啟停、更新同查看你喺用嚟定義容器嘅 compose 檔案，有即時日誌同瀏覽器內終端。本應用喺 NAS 上跑官方 Docker Hub 映像，自己嘅設定放喺應用資料目錄、compose 檔案放喺 stacks 目錄（重啟同更新都唔會唔見），由桌面圖示打開。",
+      "important": "需要 DockerEngine（應用中心會喺缺少時自動安裝）。本應用係 Docker 控制面板，所以掛載 /var/run/docker.sock —— 呢個係已申報嘅例外：仍然以非 root 使用者執行、唔加 capability、而且只掛載呢個 socket 檔案。compose 檔案放喺 /Volume1/DockerAppData/dockgedocker/stacks，TOS 檔案管理員睇唔到呢個路徑，請用 SSH/SFTP 或者 Dockge 內建嘅編輯器；自己開堆疊時 volume 一律寫宿主絕對路徑（/Volume1/...），唔好用相對路徑。解除安裝並刪除資料之前，請備份 app_data/（所有設定）同 stacks/。"
+    }
+  },
+  "http_path": "/",
+  "healthcheck": [
+    "CMD-SHELL",
+    "curl -s -o /dev/null http://127.0.0.1:5001/ || exit 1"
+  ],
+  "healthcheck_note": "Probes the container port with curl and accepts any HTTP response (no -f): Dockge answers on / as soon as its web server is up, and the app's own login page is HTTP 200, so a user changing nothing can never trip a platform-level failure.",
+  "runtime_files": [
+    {
+      "path": "app_data/dockge.db",
+      "purpose": "settings, users, stack metadata and the JWT secret (SQLite)",
+      "created": "first start",
+      "growth": "grows slowly with the number of stacks and stored passwords",
+      "lifecycle": "never overwritten; the application owns it - back it up"
+    },
+    {
+      "path": "app_data/dockge.db-shm",
+      "purpose": "SQLite shared-memory index (created while the service runs)",
+      "created": "first start",
+      "growth": "bounded, fixed size",
+      "lifecycle": "transient; recreated automatically"
+    },
+    {
+      "path": "app_data/dockge.db-wal",
+      "purpose": "SQLite write-ahead log (created while the service runs)",
+      "created": "first start",
+      "growth": "bounded; checkpointed into dockge.db automatically",
+      "lifecycle": "transient; recreated automatically"
+    },
+    {
+      "path": "app_data/db-config.json",
+      "purpose": "which database backend Dockge uses (SQLite by default)",
+      "created": "first start",
+      "growth": "static",
+      "lifecycle": "never overwritten; safe to delete (falls back to SQLite)"
+    },
+    {
+      "path": "stacks/",
+      "purpose": "your compose files - one directory per stack, plus .env files and anything you create there",
+      "created": "when you create the first stack in the UI",
+      "growth": "bounded by your own stacks",
+      "lifecycle": "user owned; never touched by the package - back it up"
+    }
+  ],
+  "data_notes": "The container needs no Docker-external state at all: everything it owns is in\n`app_data/` (its SQLite database with settings, users and stack metadata) and\nin `stacks/` (the compose files it manages). Both are bind mounts, so\nrestarting or reinstalling the application keeps them. Neither directory is\nvisible in the TOS file manager (Docker applications have no shared folder),\nso use SSH/SFTP, or Dockge's built-in editor, to drop files in or take a\nbackup.\n",
+  "design_notes": [
+    "**Stacks directory: container path == host path.** Dockge spells out a hard requirement - \"Left Stacks Path === Right Stacks Path\" - because it hands the compose file path to the Docker CLI. The stacks folder is therefore mounted at its own absolute host path (`/Volume1/DockerAppData/dockgedocker/stacks` inside and outside the container), so a relative volume like `./data` in a stack resolves to the same directory for the daemon as for Dockge.",
+    "**Measured non-root fit.** The upstream image carries no `user:`, so the probe ran it as uid 1000: it exits with `EACCES mkdir /opt/stacks` when the stacks directory is not mounted. With both directories mounted (and therefore owned by the application user) the unmodified image serves HTTP 200 and reports `healthy` as uid 1000 - no entrypoint wrapper needed.",
+    "**Socket exception, documented.** Only `/var/run/docker.sock` is mounted; `group_add: [\"0\"]` exists solely because the TOS socket is `root:root 0660`. The rationale, the least-privilege analysis and the reproducible evidence are in `docs/SOCKET-EXEMPTION.md` and decision D-006; the build gate refuses the socket for every application that does not declare this exception."
+  ],
+  "limitations": [
+    "Dockge manages **Docker** containers only, and only what the TOS DockerEngine daemon can do; it is not a general NAS control panel.",
+    "The stacks folder (`/Volume1/DockerAppData/dockgedocker/stacks`) is not browseable in the TOS file manager - reach it over SSH/SFTP or through Dockge's editor. Back it up before removing the application with data.",
+    "Stacks that use **relative** volume paths are written relative to the compose file, that is, into the stacks folder itself; use absolute `/Volume1/...` host paths in your own stacks to keep data where you expect it.",
+    "The container terminal runs as the container's own user, not as the NAS administrator."
+  ],
+  "platform": "x86_64",
+  "user": "1000:1000",
+  "publisher": "Moechz",
+  "compose_project": "dockgedocker",
+  "github_repo": "dockge",
+  "upstream_version": "1.5.0",
+  "release_tag_prefix": "v",
+  "version": "1.5.0-1",
+  "help": "https://github.com/Moechz/dockge/issues",
+  "official": "https://github.com/louislam/dockge",
+  "license": "MIT"
+}

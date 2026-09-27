@@ -1,0 +1,195 @@
+# ===========================================================================
+# Multilingual file for the TOS 7 Docker application "dockgedocker".
+# File name MUST be: <appid>.lang.  23-language superset (14 required by TOS).
+# The App Center picks the text matching the user's device language;
+# untranslated nodes fall back to English, which the official guide allows.
+# Fields: name (app title), auth (upstream author), descript (up to 512
+# chars), release_note, important (up to 512 chars).
+# Translations come from tosapp.json "translations"; run
+#   tosdocker lang <app>          to re-render this file
+#   tosdocker translate <app>     to see what still needs translating
+# ===========================================================================
+[en-us]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[zh-cn]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge 是一个自托管的 Docker Compose 栈管理器：用轻量网页面板创建、编辑、启停、更新和查看你用来定义容器的 compose 文件，带实时日志和浏览器内终端。本应用在 NAS 上运行官方 Docker Hub 镜像，自身设置保存在应用数据目录、compose 文件保存在 stacks 目录（重启与更新都不丢），从桌面图标打开。"
+release_note = "1. First release."
+important    = "依赖 DockerEngine（应用中心会在缺失时自动安装）。本应用是 Docker 控制面板，因此挂载 /var/run/docker.sock —— 这是已申报的例外：仍以非 root 用户运行、不新增 capability、且只挂载该 socket 文件。compose 文件存放在 /Volume1/DockerAppData/dockgedocker/stacks，TOS 文件管理器看不到该路径，请用 SSH/SFTP 或 Dockge 自带的编辑器；自建栈时卷一律写宿主绝对路径（/Volume1/...），不要用相对路径。卸载并删除数据前请备份 app_data/（全部设置）与 stacks/。"
+
+[zh-hk]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge 係一個自架嘅 Docker Compose 堆疊管理器：用輕量網頁面板建立、編輯、啟停、更新同查看你喺用嚟定義容器嘅 compose 檔案，有即時日誌同瀏覽器內終端。本應用喺 NAS 上跑官方 Docker Hub 映像，自己嘅設定放喺應用資料目錄、compose 檔案放喺 stacks 目錄（重啟同更新都唔會唔見），由桌面圖示打開。"
+release_note = "1. First release."
+important    = "需要 DockerEngine（應用中心會喺缺少時自動安裝）。本應用係 Docker 控制面板，所以掛載 /var/run/docker.sock —— 呢個係已申報嘅例外：仍然以非 root 使用者執行、唔加 capability、而且只掛載呢個 socket 檔案。compose 檔案放喺 /Volume1/DockerAppData/dockgedocker/stacks，TOS 檔案管理員睇唔到呢個路徑，請用 SSH/SFTP 或者 Dockge 內建嘅編輯器；自己開堆疊時 volume 一律寫宿主絕對路徑（/Volume1/...），唔好用相對路徑。解除安裝並刪除資料之前，請備份 app_data/（所有設定）同 stacks/。"
+
+[fr-fr]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[de-de]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[it-it]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[es-es]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[hu-hu]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[ja-jp]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[ko-kr]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[pl-pl]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[ru-ru]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[tr-tr]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[pt-pt]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[ar-sa]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[cs-cz]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[he-il]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[id-id]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[nb-no]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[nl-nl]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[sv-se]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[th-th]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
+[vi-vn]
+name         = "Dockge"
+auth         = "louislam"
+version      = "@@VERSION@@"
+descript     = "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon."
+release_note = "1. First release."
+important    = "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal."
+
