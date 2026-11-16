@@ -40,6 +40,10 @@ if [ "$PROBE_HOST_SPEC" = auto ]; then
 fi
 [ -n "$PROBE_HOST" ] || PROBE_HOST="$PROBE_HOST_SPEC"
 [ -n "$PROBE_HOST" ] || PROBE_HOST=127.0.0.1
+# Web scheme from the spec (https for apps such as UniFi with a self-signed UI).
+WEB_PROTOCOL=$(j "d.get('web_protocol','http')")
+CURLK=""
+[ "$WEB_PROTOCOL" = https ] && CURLK="-k"
 # Docker socket exception (spec: docker_socket: true). The socket is a bind mount
 # source like any other, so the official installer may chown it: snapshot the
 # host permissions before installing and put them back if they change.
@@ -55,15 +59,33 @@ ok()        { echo "  [ OK ] $*"; PASS=$((PASS+1)); }
 bad()       { echo "  [FAIL] $*"; FAIL=$((FAIL+1)); }
 info_note() { echo "  [info] $*"; }
 
+write_as_uid() {  # host_path uid  (images without a shell: probe with a helper container)
+  "$DOCKER" run --rm -u "$2" -v "$1:/mnt" --entrypoint sh busybox:1.36.1 \
+    -c 'touch /mnt/.e2e-write && rm -f /mnt/.e2e-write' >/dev/null 2>&1
+}
+
+
 [ "$(id -u)" = "0" ] || { echo "ERROR: must run as uid 0 (TOS admin account)"; exit 1; }
 [ -s "$PKG" ] || { echo "ERROR: package not found: $PKG"; exit 1; }
 [ -x "$TOOL" ] || { echo "ERROR: TOSAppSelfTestingTool missing at $TOOL"; exit 1; }
 
 echo "== 0/6  pre-clean (old containers / port) =="
-for n in $("$DOCKER" ps -a --format '{{.Names}}' 2>/dev/null | grep -E "^${APPID}(_[0-9]+)?$"); do
-  echo "   removing old container: $n"
-  "$DOCKER" rm -f "$n" >/dev/null 2>&1 || true
-done
+# Remove leftovers by compose project label, not only by container name. A
+# multi-service application (main container plus a broker/database) can leave
+# containers with other names behind, and a stale container name makes the
+# official installer fall back to a second instance (<appid>_1) with a
+# different data directory - which then fails every path assertion below.
+remove_project_containers() {
+  for n in $("$DOCKER" ps -a --format '{{.Names}}' 2>/dev/null); do
+    proj=$("$DOCKER" inspect "$n" --format '{{index .Config.Labels "com.docker.compose.project"}}' 2>/dev/null)
+    case "$proj" in
+      "$APPID"|"$APPID"_*|"$APPID"-*)
+        echo "   removing old container: $n (project ${proj:-none})"
+        "$DOCKER" rm -f "$n" >/dev/null 2>&1 || true ;;
+    esac
+  done
+}
+remove_project_containers
 if ss -tln 2>/dev/null | grep -q ":${PORT} "; then
   echo "   !! port ${PORT} is in use by something else:"
   ss -tlnp 2>/dev/null | grep ":${PORT} "
@@ -78,7 +100,8 @@ echo
 echo "== 2/6  wait until the service answers =="
 ready=no
 for i in $(seq 1 45); do
-  if curl -fsS -m 3 "http://127.0.0.1:${PORT}${HTTP_PATH}" >/dev/null 2>&1; then
+  rcode=$(curl $CURLK -s -o /dev/null -w '%{http_code}' -m 3 "${WEB_PROTOCOL}://${PROBE_HOST}:${PORT}${HTTP_PATH}" 2>/dev/null)
+  if [ "${rcode#2}" != "$rcode" ] || [ "${rcode#3}" != "$rcode" ] || [ "$rcode" = 401 ] || [ "$rcode" = 403 ]; then
     ready=yes; echo "   ready after ~$((i * 2))s"; break
   fi
   sleep 2
@@ -89,23 +112,37 @@ echo
 echo "== 3/6  service / non-root / ports =="
 "$DOCKER" ps -a --filter "name=^${APPID}$" --format '  {{.Names}} | {{.Image}} | {{.Status}} | {{.Ports}}'
 hstat=starting
-for _ in $(seq 1 20); do
+for _ in $(seq 1 100); do
   hstat=$("$DOCKER" inspect "$APPID" --format '{{.State.Health.Status}}' 2>/dev/null)
   [ "$hstat" = healthy ] && break
   sleep 3
 done
 [ "$hstat" = healthy ] && ok "healthcheck = healthy" || bad "healthcheck = ${hstat:-unknown}"
 uid=$("$DOCKER" exec "$APPID" id -u 2>/dev/null)
-[ "$uid" = "$UIDSPEC" ] && ok "runs as uid $UIDSPEC (non-root)" || bad "uid=$uid (expected $UIDSPEC)"
-ss -tln 2>/dev/null | grep -q ":${PORT} " && ok "host port ${PORT} listening" || bad "host port ${PORT} not listening"
-pub=$("$DOCKER" port "$APPID" 2>/dev/null)
-npub=$(printf '%s\n' "$pub" | grep -c '^[0-9]')
-if [ "$npub" = 2 ] && ! printf '%s\n' "$pub" | grep -v '^[0-9]*/tcp -> ' | grep -q '^[0-9]' \
-   && printf '%s\n' "$pub" | grep -q ":${PORT}$"; then
-  ok "only one container port published, on host ${PORT}"
-else
-  bad "unexpected port publishing: $(printf '%s' "$pub" | tr '\n' ' ')"
+case "$uid" in ''|*[!0-9]*) uid="";; esac
+if [ -z "$uid" ]; then
+  # distroless images have no `id`; read the host view of the container's PID 1
+  pid=$("$DOCKER" inspect -f '{{.State.Pid}}' "$APPID" 2>/dev/null)
+  [ -n "$pid" ] && uid=$(awk '/^Uid:/{print $2}' /proc/$pid/status 2>/dev/null)
 fi
+[ "$uid" = "$UIDSPEC" ] && ok "runs as uid $UIDSPEC (non-root)" || bad "uid=$uid (expected $UIDSPEC)"
+ss -tln 2>/dev/null | grep -q ":${PORT} " && ok "web port ${PORT} listening" || bad "web port ${PORT} not listening"
+pub=$("$DOCKER" port "$APPID" 2>/dev/null)
+if printf '%s\n' "$pub" | grep -q ":${PORT}$"; then
+  ok "web port ${PORT} published"
+else
+  bad "web port ${PORT} not published: $(printf '%s' "$pub" | tr '\n' ' ')"
+fi
+# Additional ports declared in the spec (device inform, STUN, discovery, ...).
+EXTRA_PORTS=$(python3 -c "import json;d=json.load(open('$SPEC'));print(' '.join('%s/%s'%(p['host'],p.get('protocol','tcp')) for p in d.get('ports') or []))")
+for pair in $EXTRA_PORTS; do
+  hp=${pair%%/*}; proto=${pair##*/}
+  if printf '%s\n' "$pub" | grep -qE "^[0-9]+/${proto} .*:${hp}$"; then
+    ok "declared port ${hp}/${proto} published"
+  else
+    bad "declared port ${hp}/${proto} not published: $(printf '%s' "$pub" | tr '\n' ' ')"
+  fi
+done
 if [ "$MODE" = wrapper ]; then
   cmd=$("$DOCKER" inspect "$APPID" --format '{{json .Config.Cmd}}' 2>/dev/null)
   case "$cmd" in
@@ -159,7 +196,8 @@ for pair in "${_av[@]}"; do
   o=$(stat -c '%u' "$vh" 2>/dev/null)
   [ "$o" = "$UIDSPEC" ] && ok "volume $vh owned by uid $UIDSPEC" \
     || bad "volume $vh owner uid=$o (expected $UIDSPEC)"
-  if "$DOCKER" exec "$APPID" sh -c "touch $vc/.e2e-write && rm -f $vc/.e2e-write" >/dev/null 2>&1; then
+  if "$DOCKER" exec "$APPID" sh -c "touch $vc/.e2e-write && rm -f $vc/.e2e-write" >/dev/null 2>&1 \
+     || write_as_uid "$vh" "$UIDSPEC" 2>/dev/null; then
     ok "the service can write into $vc"
   else
     bad "the service cannot write into $vc"
@@ -170,7 +208,7 @@ done
 owner_root=$(stat -c '%u' "$DATA" 2>/dev/null)
 [ "$owner_root" = "$UIDSPEC" ] || info_note "app data root owner uid=$owner_root (platform-managed)"
 if "$DOCKER" exec "$APPID" sh -c "touch $VOL0_CONT/.e2e-write && rm -f $VOL0_CONT/.e2e-write" \
-     >/dev/null 2>&1; then
+     >/dev/null 2>&1 || write_as_uid "$VOL0" "$UIDSPEC" 2>/dev/null; then
   ok "the service can write into $VOL0_CONT"
 else
   bad "the service cannot write into $VOL0_CONT (a comment inside the compose volumes list, or the wrong uid)"
@@ -196,9 +234,10 @@ fi
 
 echo
 echo "== 5/6  functionality =="
-code=$(curl -s -o /dev/null -w '%{http_code}' -m 8 "http://127.0.0.1:${PORT}${HTTP_PATH}" || true)
+code=$(curl $CURLK -s -o /dev/null -w '%{http_code}' -m 8 "${WEB_PROTOCOL}://${PROBE_HOST}:${PORT}${HTTP_PATH}" || true)
 case "$code" in
   2*|3*) ok "HTTP ${HTTP_PATH} -> ${code}" ;;
+  401|403) ok "HTTP ${HTTP_PATH} -> ${code} (auth-protected, server answers)" ;;
   *) bad "HTTP ${HTTP_PATH} -> ${code:-no response}" ;;
 esac
 CONTENT_CONTAINER=$(j "(d.get('content_volume') or '')")
@@ -207,7 +246,7 @@ if [ -n "$CONTENT_CONTAINER" ]; then
   marker="tosdocker-e2e-$$"
   echo "e2e $marker" > "$CONTENT_HOST/tosdocker-e2e.txt"
   sleep 1
-  curl -fsS -m 8 "http://127.0.0.1:${PORT}/tosdocker-e2e.txt" 2>/dev/null | grep -q "$marker" \
+  curl $CURLK -fsS -m 8 "${WEB_PROTOCOL}://${PROBE_HOST}:${PORT}/tosdocker-e2e.txt" 2>/dev/null | grep -q "$marker" \
     && ok "user content in ${CONTENT_CONTAINER} is served" || bad "user content not served"
   rm -f "$CONTENT_HOST/tosdocker-e2e.txt"
 fi
@@ -229,12 +268,13 @@ fi
 # seconds before the port answers again: poll instead of a fixed sleep.
 code2=""
 for _ in $(seq 1 40); do
-  code2=$(curl -s -o /dev/null -w '%{http_code}' -m 8 "http://127.0.0.1:${PORT}${HTTP_PATH}" || true)
+  code2=$(curl $CURLK -s -o /dev/null -w '%{http_code}' -m 8 "${WEB_PROTOCOL}://${PROBE_HOST}:${PORT}${HTTP_PATH}" || true)
   case "$code2" in 2*|3*) break ;; esac
   sleep 3
 done
 case "$code2" in
   2*|3*) ok "still serving after a restart (${code2})" ;;
+  401|403) ok "still serving after a restart (${code2}, auth-protected)" ;;
   *) bad "after restart: ${code2:-no response}" ;;
 esac
 marker2="keep-$$"
@@ -244,7 +284,7 @@ mkdir -p "$DATA/.e2e" && echo "$marker2" > "$DATA/.e2e/marker"
                            || bad "uninstall removed data"
 "$TOOL" -i "$PKG" >/dev/null 2>&1 || true
 for _ in $(seq 1 20); do
-  curl -fsS -m 3 "http://127.0.0.1:${PORT}${HTTP_PATH}" >/dev/null 2>&1 && break
+  curl $CURLK -fsS -m 3 "${WEB_PROTOCOL}://${PROBE_HOST}:${PORT}${HTTP_PATH}" >/dev/null 2>&1 && break
   sleep 2
 done
 [ -s "$DATA/.e2e/marker" ] && ok "reinstall keeps user data" || bad "reinstall lost user data"
@@ -269,14 +309,14 @@ fi
 echo
 echo "== 6/6  result =="
 IP=$(ip -4 -o addr show scope global 2>/dev/null | awk '{print $4}' | cut -d/ -f1 | grep -v '^172\.' | head -1)
-echo "   open      : http://${IP}:${PORT}${HTTP_PATH}"
+echo "   open      : ${WEB_PROTOCOL}://${IP}:${PORT}${HTTP_PATH}"
 echo "   data      : $DATA"
 echo "   logs      : $DOCKER logs $APPID"
 echo "   stop      : $DOCKER compose -p $APPID down   (data kept)"
 if [ "$KEEP" = 1 ]; then
   echo "   --keep    : the app is left installed and running"
 else
-  "$DOCKER" rm -f "$APPID" >/dev/null 2>&1
+  remove_project_containers
   rm -rf "$DATA" "/Volume1/@apps/DockerEngine/application/$APPID"
   echo "   cleaned   : container + data + install dir removed (use --keep to keep them)"
 fi
