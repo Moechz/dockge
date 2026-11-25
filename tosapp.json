@@ -31,17 +31,17 @@
   "auth": "louislam",
   "upstream_url": "https://github.com/louislam/dockge",
   "upstream_license": "MIT",
-  "descript": "Dockge is a self-hosted manager for Docker Compose stacks: a light web panel to create, edit, start, stop, update and watch the compose files that define your containers, with live logs and a browser terminal. This app runs the official Docker Hub image on your NAS, keeps its own settings in an application data folder and your compose files in a stacks folder (so they survive restarts and updates), and is opened from its desktop icon.",
-  "important": "Requires the DockerEngine app (auto-installed if missing). This app is a Docker control panel, so it mounts /var/run/docker.sock - a justified exception: it still runs as a non-root user and mounts only the socket file. Compose files live in /Volume1/DockerAppData/dockgedocker/stacks, which the TOS file manager cannot browse; use SSH/SFTP or Dockge's editor. In your stacks use absolute /Volume1/... volume paths, never relative ones. Back up app_data/ and stacks/ before uninstalling with data removal.",
-  "release_note": "1. First release.",
+  "descript": "Dockge is a self-hosted web manager for Docker Compose stacks. It creates, edits, starts, stops, restarts and deletes compose stacks, pulls updated images, shows live logs, opens an interactive container terminal and converts docker run commands into a compose file. Compose files stay ordinary files in a stacks folder, so they survive restarts and updates. This app runs the official Docker Hub image on your NAS and opens from its desktop icon.",
+  "important": "Requires DockerEngine (auto-installed if missing). This Docker control panel mounts /var/run/docker.sock - a declared exception. The socket can control every container on this NAS, so protect the Dockge login and install only if you trust the app. It runs as non-root (1000:1000), adds no capability, uses no privileged mode or host network, and mounts only the socket file. Compose files are ordinary files in /Volume1/DockerAppData/dockgedocker/stacks (not visible in the TOS file manager).",
+  "release_note": "1.5.0-3: Rectified review findings C2/C4/C8/C9/F5/S7/T1 - verified MIT licence and image digests, complete privacy and third-party disclosure, accurate descriptions in 23 languages, documented docker.sock exemption and sensitive-path audit (no /etc, /root or /boot mounts). Upstream 1.5.0 remains the latest release. The pinned image is unchanged and the CVE follow-up is documented.",
   "translations": {
     "zh-cn": {
-      "descript": "Dockge 是一个自托管的 Docker Compose 栈管理器：用轻量网页面板创建、编辑、启停、更新和查看你用来定义容器的 compose 文件，带实时日志和浏览器内终端。本应用在 NAS 上运行官方 Docker Hub 镜像，自身设置保存在应用数据目录、compose 文件保存在 stacks 目录（重启与更新都不丢），从桌面图标打开。",
-      "important": "依赖 DockerEngine（应用中心会在缺失时自动安装）。本应用是 Docker 控制面板，因此挂载 /var/run/docker.sock —— 这是已申报的例外：仍以非 root 用户运行、不新增 capability、且只挂载该 socket 文件。compose 文件存放在 /Volume1/DockerAppData/dockgedocker/stacks，TOS 文件管理器看不到该路径，请用 SSH/SFTP 或 Dockge 自带的编辑器；自建栈时卷一律写宿主绝对路径（/Volume1/...），不要用相对路径。卸载并删除数据前请备份 app_data/（全部设置）与 stacks/。"
+      "descript": "Dockge 是自托管的 Docker Compose 栈网页管理器：可创建、编辑、启动、停止、重启和删除 compose 栈，拉取更新镜像，查看实时日志，打开容器交互终端，并能把 docker run 命令转换为 compose 文件。compose 文件以普通文件保存在 stacks 目录，重启与更新都不会丢失；本应用在 NAS 上运行官方 Docker Hub 镜像，从桌面图标打开。",
+      "important": "依赖 DockerEngine（应用中心会在缺失时自动安装）。本应用是 Docker 控制面板，需挂载 /var/run/docker.sock，这是已申报的例外；该 socket 可控制本机全部容器，请务必保护好 Dockge 登录密码，仅在信任本应用时安装。容器仍以非 root（1000:1000）运行，不新增 capability，不用 privileged 或 host 网络，只挂载该 socket 文件。compose 文件存放在 /Volume1/DockerAppData/dockgedocker/stacks（TOS 文件管理器看不到），请用 SSH/SFTP 或 Dockge 编辑器，栈内卷写宿主绝对路径 /Volume1/...。卸载并删除数据前备份 app_data/ 与 stacks/。"
     },
     "zh-hk": {
-      "descript": "Dockge 係一個自架嘅 Docker Compose 堆疊管理器：用輕量網頁面板建立、編輯、啟停、更新同查看你喺用嚟定義容器嘅 compose 檔案，有即時日誌同瀏覽器內終端。本應用喺 NAS 上跑官方 Docker Hub 映像，自己嘅設定放喺應用資料目錄、compose 檔案放喺 stacks 目錄（重啟同更新都唔會唔見），由桌面圖示打開。",
-      "important": "需要 DockerEngine（應用中心會喺缺少時自動安裝）。本應用係 Docker 控制面板，所以掛載 /var/run/docker.sock —— 呢個係已申報嘅例外：仍然以非 root 使用者執行、唔加 capability、而且只掛載呢個 socket 檔案。compose 檔案放喺 /Volume1/DockerAppData/dockgedocker/stacks，TOS 檔案管理員睇唔到呢個路徑，請用 SSH/SFTP 或者 Dockge 內建嘅編輯器；自己開堆疊時 volume 一律寫宿主絕對路徑（/Volume1/...），唔好用相對路徑。解除安裝並刪除資料之前，請備份 app_data/（所有設定）同 stacks/。"
+      "descript": "Dockge 係自架嘅 Docker Compose 堆疊網頁管理器：可以建立、編輯、啟動、停止、重新啟動同刪除 compose 堆疊，拉取更新映像，睇即時日誌，打開容器互動終端，亦可以將 docker run 指令轉做 compose 檔案。compose 檔案以普通檔案保存喺 stacks 目錄，重新啟動同更新都唔會唔見；本應用喺 NAS 上跑官方 Docker Hub 映像，由桌面圖示打開。",
+      "important": "需要 DockerEngine（應用中心會喺缺少時自動安裝）。本應用係 Docker 控制面板，要掛載 /var/run/docker.sock，呢個係已申報嘅例外；個 socket 可以控制本機全部容器，請務必保護好 Dockge 登入密碼，只喺信任本應用時安裝。容器仍然以非 root（1000:1000）執行，唔加 capability，唔用 privileged 或者 host 網絡，只掛載呢個 socket 檔案。compose 檔案放喺 /Volume1/DockerAppData/dockgedocker/stacks（TOS 檔案管理員睇唔到），請用 SSH/SFTP 或者 Dockge 編輯器，堆疊內嘅 volume 寫宿主絕對路徑 /Volume1/...。解除安裝並刪除資料前備份 app_data/ 同 stacks/。"
     }
   },
   "http_path": "/",
@@ -89,15 +89,18 @@
   ],
   "data_notes": "The container needs no Docker-external state at all: everything it owns is in\n`app_data/` (its SQLite database with settings, users and stack metadata) and\nin `stacks/` (the compose files it manages). Both are bind mounts, so\nrestarting or reinstalling the application keeps them. Neither directory is\nvisible in the TOS file manager (Docker applications have no shared folder),\nso use SSH/SFTP, or Dockge's built-in editor, to drop files in or take a\nbackup.\n",
   "design_notes": [
-    "**Stacks directory: container path == host path.** Dockge spells out a hard requirement - \"Left Stacks Path === Right Stacks Path\" - because it hands the compose file path to the Docker CLI. The stacks folder is therefore mounted at its own absolute host path (`/Volume1/DockerAppData/dockgedocker/stacks` inside and outside the container), so a relative volume like `./data` in a stack resolves to the same directory for the daemon as for Dockge.",
-    "**Measured non-root fit.** The upstream image carries no `user:`, so the probe ran it as uid 1000: it exits with `EACCES mkdir /opt/stacks` when the stacks directory is not mounted. With both directories mounted (and therefore owned by the application user) the unmodified image serves HTTP 200 and reports `healthy` as uid 1000 - no entrypoint wrapper needed.",
-    "**Socket exception, documented.** Only `/var/run/docker.sock` is mounted; `group_add: [\"0\"]` exists solely because the TOS socket is `root:root 0660`. The rationale, the least-privilege analysis and the reproducible evidence are in `docs/SOCKET-EXEMPTION.md` and decision D-006; the build gate refuses the socket for every application that does not declare this exception."
+    "**Stacks directory: container path == host path.** Dockge requires the stacks path on the left and right of the compose file to be identical, because it hands that path to the Docker CLI. The folder is mounted at its own absolute host path (`/Volume1/DockerAppData/dockgedocker/stacks` inside and outside the container), so a relative volume such as `./data` in a user stack resolves to the same directory for the daemon and Dockge.",
+    "**Measured non-root fit.** The upstream image carries no `user:`, so the probe ran it as uid 1000: it exits with `EACCES mkdir /opt/stacks` when the stacks directory is not mounted. With both directories mounted (owned by the application user) the unmodified image serves HTTP 200 and reports `healthy` as uid 1000, with no entrypoint wrapper.",
+    "**Socket exception, documented.** Only `/var/run/docker.sock` is mounted; `group_add: [\"0\"]` exists solely because the TOS socket is `root:root 0660`. The rationale, least-privilege analysis, sensitive-path audit and reproducible evidence are in `docs/SOCKET-EXEMPTION.md` and decision D-006 in `docs/DESIGN_DECISIONS.md`. The build gate refuses the socket for every application that does not declare this exception.",
+    "**Sensitive-path audit (S7).** The package mounts no `/etc`, `/root` or `/boot` path, and the upstream image declares only `VOLUME /app/data`. The only host bind mounts are the application data directory, the stacks directory and the socket file itself. `cap_drop: [ALL]`, `no-new-privileges` and unique non-root uid 1000 bound the surface."
   ],
   "limitations": [
     "Dockge manages **Docker** containers only, and only what the TOS DockerEngine daemon can do; it is not a general NAS control panel.",
+    "**The socket exception is a real privilege.** Anyone who can log in to Dockge can control every container on this NAS. Set a strong admin password, keep the UI on the LAN or behind TLS, and do not expose port 8004 to the internet.",
     "The stacks folder (`/Volume1/DockerAppData/dockgedocker/stacks`) is not browseable in the TOS file manager - reach it over SSH/SFTP or through Dockge's editor. Back it up before removing the application with data.",
     "Stacks that use **relative** volume paths are written relative to the compose file, that is, into the stacks folder itself; use absolute `/Volume1/...` host paths in your own stacks to keep data where you expect it.",
-    "The container terminal runs as the container's own user, not as the NAS administrator."
+    "The container terminal runs as the container's own user (uid 1000), not as the NAS administrator.",
+    "**T1 (CVE follow-up):** upstream Dockge 1.5.0 (image built 2025-03-30, Node 22.14.0) is still the latest release as of 2026-11-25. The image is used unmodified, so a patched base can only arrive from upstream; the package pins the image and will be rebuilt when one is published. Mitigations already in place: non-root, `cap_drop: [ALL]`, no-new-privileges, no privileged mode, no host network, one port, socket-only exception."
   ],
   "platform": "x86_64",
   "user": "1000:1000",
@@ -106,8 +109,8 @@
   "github_repo": "dockge",
   "upstream_version": "1.5.0",
   "release_tag_prefix": "v",
-  "version": "1.5.0-2",
-  "help": "https://github.com/Moechz/dockge/issues",
+  "version": "1.5.0-3",
+  "help": "https://github.com/Moechz/dockge/blob/main/PRIVACY.md",
   "official": "https://github.com/louislam/dockge",
   "license": "MIT"
 }

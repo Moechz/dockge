@@ -8,7 +8,8 @@
 # --- internal project documents: kept locally, never published ---
 AGENTS.md
 HANDOFF.md
-/docs/
+# docs/ is published on purpose: the socket exemption and privacy evidence
+# must be publicly readable for review (C10). Do not ignore it.
 
 # --- build machine noise ---
 .DS_Store

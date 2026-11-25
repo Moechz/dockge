@@ -1,172 +1,232 @@
 # dockge-for-tos
 
 > TerraMaster TOS 7 App Center — **Docker application** package for
-> [Dockge](https://github.com/louislam/dockge).
+> [Dockge](https://github.com/louislam/dockge), the self-hosted Docker Compose
+> stack manager.
 
 ## What this is
 
-A four-file TOS Docker application archive (`dockgedocker.tar.gz`) that installs
-Dockge on TOS 7 through the App Center:
+A four-file TOS Docker application archive (`dockgedocker.tar.gz`) that installs the
+official Dockge image on TOS 7 through the App Center:
 
 - `config.ini` — TOS application metadata (`application_type: docker`, id `dockgedocker`)
-- `dockgedocker.lang` — 23-language superset (TOS requires 14)
-- `dockgedocker.svg` — application icon (1584 bytes, 5 SVG elements)
-- `docker-compose.yml` — one service, image `louislam/dockge:1.5.0`
+- `dockgedocker.lang` — 23-language description file (TOS requires 14)
+- `dockgedocker.svg` — application icon
+- `docker-compose.yml` — one service, image `louislam/dockge:1.5.0`, non-root,
+  capability-dropped, one published port, healthcheck, `x-app-meta`
 
-## How it works
+The image is pulled from Docker Hub at install time and used **unmodified**. This
+repository contains the packaging, documentation and build/verification scripts; it does
+not contain Dockge source code or the container image.
 
 | | |
 |---|---|
-| Container image | `louislam/dockge:1.5.0` (Docker Hub, used unmodified) |
+| Container image | `louislam/dockge:1.5.0` (Docker Hub) — OCI index `sha256:335c6368…1502bf` |
+| Upstream release | Dockge **1.5.0** — the latest release as of 2026-11-25 |
 | Open | `http://<NAS-IP>:8004/` (container port 5001) |
-| Runs as | non-root, `user: "1000:1000"` |
-| Persistent data | `/app/data` → `/Volume1/DockerAppData/dockgedocker/app_data`, `/Volume1/DockerAppData/dockgedocker/stacks` → `/Volume1/DockerAppData/dockgedocker/stacks` |
-| Logs | `docker logs dockgedocker` (stdout/stderr) |
+| Runs as | non-root, `user: "1000:1000"`, `cap_drop: [ALL]`, `no-new-privileges` |
+| Persistent data | `/Volume1/DockerAppData/dockgedocker/` (`app_data/`, `stacks/`) |
+| Logs | stdout/stderr → `docker logs dockgedocker` |
+| Login | set up the administrator account on first start; no default password |
 
-The container needs no Docker-external state at all: everything it owns is in
-`app_data/` (its SQLite database with settings, users and stack metadata) and
-in `stacks/` (the compose files it manages). Both are bind mounts, so
-restarting or reinstalling the application keeps them. Neither directory is
-visible in the TOS file manager (Docker applications have no shared folder),
-so use SSH/SFTP, or Dockge's built-in editor, to drop files in or take a
-backup.
+## Features (what actually ships)
 
+The package delivers the upstream Dockge 1.5.0 features, without additions or removals:
 
-## Privacy
+- create, edit, start, stop, restart and delete Docker Compose stacks;
+- pull updated images for a stack (`compose pull` + `up`);
+- live logs and an interactive web terminal for a stack's containers;
+- an interactive editor for `compose.yaml`;
+- convert a `docker run …` command into a compose file;
+- keep compose files as ordinary files in a directory you can also reach over SSH/SFTP.
 
-This application runs entirely on your NAS. **The developer does not collect, receive or
-have access to any data processed by the application.** There is no telemetry, no analytics
-and no account.
+It is **not** a general NAS control panel: it manages Docker containers through the local
+Docker Engine, not files, users, shares or the TOS system.
 
-| Topic | Detail |
+## Repository layout
+
+```
+.
+├── src/                       # the four files that go into the .tar.gz
+│   ├── config.ini
+│   ├── dockgedocker.lang
+│   ├── dockgedocker.svg
+│   └── docker-compose.yml
+├── scripts/
+│   ├── build.sh               # one architecture
+│   └── build-dual.sh          # x86_64 + aarch64, official -c for both
+├── tools/verify.py            # review-standards gate run by build.sh
+├── test/install-and-verify.sh # on-device E2E (not needed for normal use)
+├── docs/
+│   ├── SOCKET-EXEMPTION.md    # four-part justification for docker.sock
+│   └── DESIGN_DECISIONS.md    # decision log, including D-006 / D-007
+├── PRIVACY.md                 # privacy policy and third-party API table
+├── NOTICE.md                  # licences, image digests, trademarks
+├── CHANGELOG.md
+└── out/                       # build products (generated, not committed)
+```
+
+## Install, first start, upgrade
+
+1. Install **DockerEngine** first if it is not already installed. The App Center declares
+   the dependency and will offer to install it.
+2. Install **Dockge** from the App Center (or validate the archive with
+   `TOSAppSelfTestingTool -c` and install it with `-i` on a test NAS).
+3. Open `http://<NAS-IP>:8004/`. On first start Dockge asks you to create an administrator
+   account. There is no default login.
+4. Create a stack in the UI, or drop a directory containing `compose.yaml` into
+   `/Volume1/DockerAppData/dockgedocker/stacks/` and use **Scan Stacks Folder**.
+
+Docker applications are not upgraded in place by the App Center: a new version is a new
+package/submission. Uninstalling and reinstalling keeps `app_data/` and `stacks/` unless
+you explicitly choose to delete the data. Back them up before a reinstall.
+
+## Data, backup and uninstall
+
+Everything the application owns is in two bind mounts:
+
+| Host path | Contents |
 |---|---|
-| Data processed | The application's configuration, database, caches and logs, plus any files you create with it. |
-| Where it is stored | The application data folder (`/Volume1/DockerAppData/dockgedocker/`) on your NAS. Nothing is uploaded to the developer. |
-| Retention period | Until **you** delete it. Logs are rotated or size-limited by the application; uninstalling keeps the data unless you tick “delete data”. |
-| Your rights | **Access / export**: copy the data folder. **Correct**: change the values in the web UI. **Delete**: uninstall with “delete data”, or remove the folder after stopping the container. |
-| Deletion channel | Delete the folder yourself, or email **moechz@163.com** (answered within 30 days). |
-| Security measures | Container runs as uid 1000 (never root), no `privileged`, no host network, no `cap_add`, no Docker socket, one published port; image tag pinned and refreshed on upstream fixes. |
-| Children | Not directed at children. |
+| `/Volume1/DockerAppData/dockgedocker/app_data/` | SQLite database (settings, users with bcrypt hashes, stack metadata, JWT secret), `db-config.json`, SQLite WAL/SHM while running |
+| `/Volume1/DockerAppData/dockgedocker/stacks/` | your compose files, one directory per stack, `.env` files and anything else you put there |
 
-**Full privacy policy:** [PRIVACY.md](PRIVACY.md) —
-<https://github.com/Moechz/dockge/blob/main/PRIVACY.md> — and the website version at
-<https://www.moechz.com/privacy.html>.
+Neither directory is visible in the TOS file manager (Docker applications do not use TNAS
+shared folders). Use SSH/SFTP, or Dockge's built-in editor, to inspect or back them up.
 
-## Third-party services (API disclosure)
+- **Backup:** copy both directories (or snapshot the app data root) before uninstalling
+  with data removal, before changing the database backend, and before major stack changes.
+- **Restore:** stop the container, put the directories back, start it again.
+- **Uninstall:** in the App Center, uninstall and tick “delete data” only if you want the
+  data gone; otherwise the two directories remain and a reinstall picks them up.
+- **Manual deletion:** stop the container and remove
+  `/Volume1/DockerAppData/dockgedocker/` over SSH/SFTP. The host Docker socket and other
+  applications are not touched.
 
-The developer operates no server in this path. The application contacts only the services
-**you configure**, plus (optionally) an update check and the image registry.
+Do not put relative volume paths (`./data`) in your own stacks: they resolve inside the
+stacks directory. Use absolute `/Volume1/...` host paths so data lands where you expect it.
 
-| Service | Endpoint | Data sent | Destination / region |
-|---|---|---|---|
-| Services you configure in the app | the address you enter | only the data that feature needs | normally your own LAN or the provider you chose |
-| Update check (if enabled) | the upstream project's release feed | current version string | GitHub, US |
-| Image pull | `registry-1.docker.io` or your registry mirror | anonymous pull | Docker Hub, US / your mirror |
+## Security model and the Docker socket exception
 
-See `PRIVACY.md` §6 for the full table. Disable any integration in the app's settings if you
-do not want it.
+Dockge **is** a Docker control panel, so it needs `/var/run/docker.sock`. This is a
+declared exception to the “no host privileges” rule, not a silent default:
+
+- the container runs as **uid/gid 1000:1000**, never root;
+- all Linux capabilities are dropped (`cap_drop: [ALL]`) and privilege escalation is blocked
+  (`no-new-privileges`);
+- no `privileged`, no `cap_add`, no host network, no devices;
+- **only the socket file** is mounted — never `/var/run`, never the Docker data root;
+- `group_add: ["0"]` is present only because the TOS socket is `root:root 0660`; a uid-1000
+  process cannot open it otherwise;
+- the socket is written as a YAML long-form bind mount so the platform installer does not
+  chown the host socket to uid 1000 (measured failure mode with the short form).
+
+The full justification, the least-privilege table, the reproducible checks and the TOS 7.1
+socket-group caveat are in [`docs/SOCKET-EXEMPTION.md`](docs/SOCKET-EXEMPTION.md); the
+decision record is D-006 in [`docs/DESIGN_DECISIONS.md`](docs/DESIGN_DECISIONS.md).
+
+### Sensitive-path audit (review code S7)
+
+- The package mounts **no** `/etc`, `/root` or `/boot` path.
+- The upstream image declares **only** `VOLUME /app/data`; this repository does not build or
+  modify the image, so it cannot `COPY` or `VOLUME` a sensitive path.
+- The only host bind mounts are `app_data/`, `stacks/` and the socket file.
+- `cap_drop: [ALL]` and `no-new-privileges` bound the container further.
+
+> **Risk you accept by installing this app:** anyone who can log in to Dockge can control
+> every container on this NAS. Set a strong administrator password, keep port 8004 on the
+> LAN or behind a TLS reverse proxy, and do not expose it to the internet.
+
+## Privacy and third-party services
+
+The app runs entirely on your NAS; the developer operates no telemetry and receives no
+data. Full details, retention, user rights, security measures and the deletion channel are
+in [`PRIVACY.md`](PRIVACY.md).
+
+| Service | Endpoint / trigger | Data sent | Destination | Disable |
+|---|---|---|---|---|
+| Local Docker daemon | `/var/run/docker.sock` (no network) | compose contents, stack/container names, commands, logs, terminal I/O | this NAS | no — core function |
+| Update check | `https://dockge.kuma.pet/version`, startup + every 48 h | HTTP request metadata only (IP, User-Agent); no stack/account data | Dockge maintainer's service, outside the LAN | Settings → “Check Update” |
+| Docker Hub | `registry-1.docker.io` or your mirror, when you pull images | image name/tag, anonymous pull request, IP/UA | Docker Hub (US) or your mirror | do not pull |
+| Remote agent (optional) | the `ws(s)://` URL you add under Agents | stack metadata, commands, logs, terminal I/O | the host you choose | do not add an agent |
+| Your own stacks | URLs/images in your compose files | whatever your stack sends | the provider you choose | edit the stack |
+
+There is no advertising, analytics, crash reporter or tracking pixel. The “Check Update On
+GitHub” link only opens a browser page when clicked; the app does not call GitHub's API in
+the background.
+
+## Build and verification
+
+```bash
+# both architectures, with the official TOSAppSelfTestingTool -c on each package
+bash scripts/build-dual.sh 1.5.0-3
+
+# one architecture (writes out/dockgedocker.tar.gz)
+bash scripts/build.sh 1.5.0-3 x86_64
+```
+
+The build stages the four files, substitutes `@@VERSION@@`/`@@PLATFORM@@`, strips CRLF/BOM,
+runs `tools/verify.py` (archive layout, metadata, 23-language coverage, version consistency,
+Docker-Hub-only fixed tag, reserved/recommended port, non-root, no privileged/host-network/
+cap_add, healthcheck/TZ/restart, data paths, the socket long-form gate, no literal secrets,
+SVG limits), then packs a deterministic tar.gz and writes its `.sha256`.
+
+Runtime verification by the packager uses an isolated staging instance (temporary data
+directory and port; production `/Volume1/DockerAppData/dockgedocker` is never touched):
+the container must become `healthy` as uid 1000, answer `HTTP 200` on its web port, and
+show no `/etc`, `/root` or `/boot` mount in `docker inspect`. The on-device E2E script
+`test/install-and-verify.sh` additionally asserts the host socket's owner/mode before and
+after installation; it is for maintainers and is **not** run as part of a normal build.
+
+## Review remediation — 1.5.0-3
+
+This version responds to the 1.5.0-2 review. The full item-by-item record is in
+[`CHANGELOG.md`](CHANGELOG.md); summary:
+
+| Code | Finding | Change |
+|---|---|---|
+| C2 | Licence/attribution incomplete | `NOTICE.md` rewritten: MIT verified against upstream `LICENSE` + GitHub licence API (© 2023 Louis Lam), image index/arch digests, build date, what is and is not redistributed, packaging licence aligned to MIT in `LICENSE`, trademarks |
+| C4 | Privacy policy incomplete | `PRIVACY.md` rewritten: retention, user rights, security measures, deletion channel, third-party sharing, contact |
+| C8 | Third-party APIs not disclosed | explicit table for the local Docker daemon, optional `dockge.kuma.pet` update check, Docker Hub/mirror pulls, optional agents and user stacks |
+| C9 / F5 | Description inconsistent / declared function not usable | `descript`/`important`/`release_note` rewritten to the actual 1.5.0 feature set in all 23 languages, no ASCII semicolons, `help` now points to the public privacy policy |
+| S7 | Sensitive directories mounted | audit added to compose comments, README and `docs/SOCKET-EXEMPTION.md` §5: no `/etc`, `/root` or `/boot` mount, image volume is only `/app/data` |
+| T1 | High/critical CVE | upstream 1.5.0 is still the latest release; the image is unmodified and cannot be patched by this package, so the pinned tag is kept and the follow-up is documented; mitigations are non-root, `cap_drop: [ALL]`, no-new-privileges, no privileged/host network, single port, socket-only exception |
+
+The 1.5.0-2 review also reported an App Center online-installation check failure. The
+package starts successfully in isolated staging (HTTP 200, uid 1000, healthcheck healthy,
+no sensitive mount); the compose keeps the same single service and port `8004` (port
+conflicts are not treated as a package defect, see RUNBOOK §12). The healthcheck start
+period was raised to 60 s with 5 retries so a slow first pull cannot fail an installation
+check.
+
+## Limitations
+
+- Dockge manages **Docker Compose stacks only**; it is not a general NAS control panel.
+- The stacks folder is not browseable in the TOS file manager; use SSH/SFTP or Dockge's
+  editor, and back it up before removing data.
+- Relative volume paths in your own stacks resolve inside the stacks folder; use absolute
+  `/Volume1/...` paths.
+- The web UI is HTTP by default. Put it behind a TLS reverse proxy for remote access.
+- The socket exception gives the app control of all containers on the NAS (see the risk
+  note above).
+- T1: upstream 1.5.0 (image built 2025-03-30, Node 22.14.0) is the latest release; a patched
+  base can only come from upstream. See `CHANGELOG.md`.
 
 ## Licence and attributions
 
 | Component | Licence | Notes |
 |---|---|---|
-| Dockge | MIT | upstream application, used unmodified inside the image |
-| Container image `louislam/dockge:1.5.0` | see the image's own metadata | pulled from Docker Hub at install time |
-| This packaging | GPL-3.0 (see `LICENSE`) | compose file, metadata, translations, icon |
+| Dockge | MIT (© 2023 Louis Lam) | upstream application, used unmodified inside the image |
+| Image `louislam/dockge:1.5.0` | MIT + bundled component licences | pulled from Docker Hub at install time |
+| This packaging | MIT (see `LICENSE`) | compose file, metadata, translations, icon, documentation |
 
-“Dockge”, “TerraMaster” and “TOS” are trademarks of their respective owners. This is an
-independent community package by Moechz and is not affiliated with the upstream project or
-TerraMaster. Full details: [NOTICE.md](NOTICE.md).
-
-## Design highlights
-
-- **Non-root.** `user: "1000:1000"`; verified on real hardware (the container reports uid 1000).
-- **Fixed image tag, never `:latest`**, Docker Hub only, no `privileged`, no `network_mode: host`, and no `cap_add`. This application does mount the Docker socket, in YAML long form - a deliberate, documented exception (compose comments + the package decision record D-006): it is a Docker control panel, so the socket is its entire function. It still runs unprivileged and mounts only the socket file itself. The long form matters: the installer chowns mount sources it can read as `src:dst`, and doing that to the host socket would hand Docker to every uid-1000 container on the NAS.
-- **Health check** probing the service on container port 5001.
-- **Deterministic build**: GNU tar with uid/gid 0 and zeroed timestamps, gzip without a timestamp, plus the review-standards self-check above.
-- **Stacks directory: container path == host path.** Dockge spells out a hard requirement - "Left Stacks Path === Right Stacks Path" - because it hands the compose file path to the Docker CLI. The stacks folder is therefore mounted at its own absolute host path (`/Volume1/DockerAppData/dockgedocker/stacks` inside and outside the container), so a relative volume like `./data` in a stack resolves to the same directory for the daemon as for Dockge.
-- **Measured non-root fit.** The upstream image carries no `user:`, so the probe ran it as uid 1000: it exits with `EACCES mkdir /opt/stacks` when the stacks directory is not mounted. With both directories mounted (and therefore owned by the application user) the unmodified image serves HTTP 200 and reports `healthy` as uid 1000 - no entrypoint wrapper needed.
-- **Socket exception, documented.** This application mounts
-  `/var/run/docker.sock` - the one privilege the platform normally refuses -
-  because it *is* a Docker control panel: listing stacks, starting and stopping
-  them, `compose up/down`, logs and the terminal are all Docker Engine API calls,
-  and without the socket the UI opens while every action fails. It is mounted in
-  YAML long form on purpose (the official installer chowns mount sources it can
-  read as `src:dst`; doing that to the host socket would hand Docker to every
-  uid-1000 container on the NAS - measured, not theoretical). Only the socket file
-  is mounted, the container stays unprivileged, and `group_add: ["0"]` exists
-  solely because the TOS socket is `root:root 0660`. The reproducible evidence
-  and the four-part justification travel with the package's internal decision
-  record (D-006).
-
-## Runtime file manifest
-
-Everything the application writes on the NAS lives inside its own data
-directory; the container-internal `/tmp` is discarded with the container. The
-table lists what is created and how it behaves. Nothing else is written.
-
-| Path | Purpose | Created when | Growth bound | Lifecycle |
-|---|---|---|---|---|
-| `app_data/dockge.db` | settings, users, stack metadata and the JWT secret (SQLite) | first start | grows slowly with the number of stacks and stored passwords | never overwritten; the application owns it - back it up |
-| `app_data/dockge.db-shm` | SQLite shared-memory index (created while the service runs) | first start | bounded, fixed size | transient; recreated automatically |
-| `app_data/dockge.db-wal` | SQLite write-ahead log (created while the service runs) | first start | bounded; checkpointed into dockge.db automatically | transient; recreated automatically |
-| `app_data/db-config.json` | which database backend Dockge uses (SQLite by default) | first start | static | never overwritten; safe to delete (falls back to SQLite) |
-| `stacks/` | your compose files - one directory per stack, plus .env files and anything you create there | when you create the first stack in the UI | bounded by your own stacks | user owned; never touched by the package - back it up |
-| `/Volume1/DockerAppData/dockgedocker/app_data` | Dockge application data (everything the container writes outside /tmp) | on first start / on demand | bounded by your own data | persistent; kept on uninstall unless you ask to delete it |
-| `/Volume1/DockerAppData/dockgedocker/stacks` | Dockge application data (everything the container writes outside /tmp) | on first start / on demand | bounded by your own data | persistent; kept on uninstall unless you ask to delete it |
-
-## Build
-
-```bash
-scripts/build.sh                  # -> out/dockgedocker.tar.gz + .sha256
-scripts/build.sh 1.5.0-2   # packaging iteration bump
-scripts/build.sh 1.5.0-1 aarch64
-```
-
-The build stages the four files, substitutes the version/platform placeholders,
-removes CRLF/BOM/AppleDouble, then runs
-`tools/verify.py`, a review-standards self-check (archive layout, JSON validity,
-required fields, 14+ language coverage, version consistency, Docker-Hub-only
-images, fixed tag, reserved/recommended host ports, non-root user, per-service
-healthcheck/TZ/restart, data path below the application data root, never the
-`/Volume*` wildcard, comment-free sequence blocks, `x-app-meta` position, no
-literal secrets and the SVG size/element limits).
-
-## Local verification
-
-```bash
-./TOSAppSelfTestingTool -c out/dockgedocker.tar.gz   # official spec check
-bash test/install-and-verify.sh                  # on-device E2E (needs root)
-```
-
-> Docker applications cannot be side-loaded through the App Center's manual
-> install page (it accepts `.deb` only); the official self-testing tool's `-i`
-> mode or `docker compose` are the only ways to install one for testing.
-
-## Store submission checklist
-
-1. Public GitHub repo (code + README only).
-2. Release **tag `v1.5.0-1`**, assets `dockgedocker.tar.gz` +
-   `dockgedocker.tar.gz.sha256` (Docker asset naming: `<app_id>.tar.gz`, **no
-   platform suffix**).
-3. Developer platform → Add Application: ID `dockgedocker`, package type Docker,
-   repository URL, architecture `x86_64`.
-4. Version Management → Add Version `1.5.0-1` → automated validation → review.
-
-
-## Limitations
-
-Dockge manages **Docker** containers only, and only what the TOS DockerEngine daemon can do; it is not a general NAS control panel.
-The stacks folder (`/Volume1/DockerAppData/dockgedocker/stacks`) is not browseable in the TOS file manager - reach it over SSH/SFTP or through Dockge's editor. Back it up before removing the application with data.
-Stacks that use **relative** volume paths are written relative to the compose file, that is, into the stacks folder itself; use absolute `/Volume1/...` host paths in your own stacks to keep data where you expect it.
-The container terminal runs as the container's own user, not as the NAS administrator.
-
----
-
-Packaged for TOS 7 by Moechz. Upstream image used unmodified from Docker Hub.
+“Dockge” is the upstream project's name; “TerraMaster”, “TOS” and “TNAS” are trademarks of
+their respective owners. This is an independent community package by Moechz and is not
+affiliated with or endorsed by the upstream project or TerraMaster. Full details:
+[`NOTICE.md`](NOTICE.md).
 
 ## Support
 
 - Issues and questions: <https://github.com/Moechz/dockge/issues>
 - Email: moechz@163.com
-- Privacy: [PRIVACY.md](PRIVACY.md) · Licence: [NOTICE.md](NOTICE.md)
+- Privacy: [`PRIVACY.md`](PRIVACY.md) · Notices: [`NOTICE.md`](NOTICE.md) ·
+  Socket exemption: [`docs/SOCKET-EXEMPTION.md`](docs/SOCKET-EXEMPTION.md)

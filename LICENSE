@@ -23,12 +23,12 @@ SOFTWARE.
 -------------------------------------------------------------------------------
 Third-party notices
 
-Dockge is Copyright its upstream authors and is distributed under
-MIT. This repository only packages the
-official container image `louislam/dockge:1.5.0` from Docker Hub unmodified; no
-upstream source code is distributed here. All trademarks belong to their owners.
-This is an independent community package, not affiliated with the upstream
-project or TerraMaster.
+Dockge is Copyright (c) 2023 Louis Lam and is distributed under the MIT
+licence. This repository only packages the official container image
+`louislam/dockge:1.5.0` from Docker Hub unmodified; no upstream source code is
+distributed here. All trademarks belong to their owners. This is an independent
+community package, not affiliated with the upstream project or TerraMaster.
 
-TOSAppSelfTestingTool is an official TerraMaster utility, redistributed here
-unmodified for local package validation.
+TOSAppSelfTestingTool is an official TerraMaster utility. A copy is kept in
+this source repository, unmodified, for local package validation; it is not
+part of the submitted application archive.

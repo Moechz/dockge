@@ -13,8 +13,14 @@
 # TOS rules honoured: Docker Hub image with a fixed tag (never ':latest'),
 #           container_name == application id, restart: unless-stopped,
 #           non-root user, no privileged mode, no network_mode: host, no
-#           cap_add, explicit TZ, a healthcheck on the only service, and
-#           x-app-meta as the last block.
+#           cap_add, cap_drop ALL, no-new-privileges, explicit TZ, a
+#           healthcheck on the only service, and x-app-meta as the last block.
+#
+# SENSITIVE-PATH AUDIT (review code S7): this package mounts NO /etc, /root
+#           or /boot path, and the upstream image declares only
+#           VOLUME /app/data. The only host bind mounts are app_data/,
+#           stacks/ and the socket file below. Nothing is copied into or
+#           volume-declared from those sensitive directories.
 #
 # EXCEPTION - Docker socket (approved deviation, see docs/DESIGN_DECISIONS.md
 # and docs/SOCKET-EXEMPTION.md). This application *is* a Docker control
@@ -25,6 +31,7 @@
 #
 # Least privilege actually applied:
 #   * the container still runs as an unprivileged user (uid 1000), never root;
+#   * all Linux capabilities are dropped and privilege escalation is blocked;
 #   * only the socket file is bind-mounted - never /var/run, never the
 #     Docker data root, never an extra capability, never privileged mode;
 #   * group_add: ["0"] is required only because the TOS socket is
@@ -49,6 +56,10 @@ services:
     user: "1000:1000"
     group_add:
       - "0"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "8004:5001"
     environment:
@@ -65,8 +76,8 @@ services:
       test: ["CMD-SHELL", "curl -s -o /dev/null http://127.0.0.1:5001/ || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 30s
+      retries: 5
+      start_period: 60s
 
 # TOS App Center web metadata (must be the last block of the file):
 # web.port is the published host port above, protocol is http.
